@@ -1,0 +1,19 @@
+apiVersion: v2
+name: windyflo
+description: WindyFlo (main + worker) with an optional in-cluster, self-built HA data
+  layer (Postgres via CloudNativePG, Redis Sentinel, MinIO). Single chart, air-gap
+  baseline.
+type: application
+version: 3.0.20
+appVersion: 3.0.14
+kubeVersion: '>=1.27.0-0'
+home: https://windyflo.com
+icon: https://windyflo.com/icon.png
+maintainers:
+- name: Hamada Labs
+dependencies:
+- name: redis
+  version: 20.6.3
+  repository: oci://registry-1.docker.io/bitnamicharts
+  condition: data.redis.embedded
+  alias: redis

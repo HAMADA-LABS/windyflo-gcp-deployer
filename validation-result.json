@@ -1,0 +1,11 @@
+{
+  "schema_validation": "passed",
+  "google_deployer_render": "passed",
+  "application_validation": "passed",
+  "image_relocation": "passed",
+  "form_parameter_mapping": "passed",
+  "resources": 34,
+  "distinct_images": 7,
+  "gke_installation": "not_run",
+  "marketplace_container_review": "not_submitted"
+}

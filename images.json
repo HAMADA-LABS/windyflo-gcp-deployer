@@ -1,0 +1,51 @@
+[
+  {
+    "image": "windyflo",
+    "ref": "us-docker.pkg.dev/windyflo-public/windyflo-marketplace/windyflo:3.0.14",
+    "digest": "sha256:ca76b500a5501d060a6deb6303d4e8a6f2599228febd376864c2d3f6d52179e6",
+    "annotation": "verified",
+    "version_track_match": true
+  },
+  {
+    "image": "postgresql",
+    "ref": "us-docker.pkg.dev/windyflo-public/windyflo-marketplace/windyflo/postgresql:3.0.14",
+    "digest": "sha256:f387653b127ac65f4f995819d11eefe3b31517f631af0fbf7cae529a166efb4a",
+    "annotation": "verified",
+    "version_track_match": true
+  },
+  {
+    "image": "pgbouncer",
+    "ref": "us-docker.pkg.dev/windyflo-public/windyflo-marketplace/windyflo/pgbouncer:3.0.14",
+    "digest": "sha256:e679caad93f028450fe934a3d8792a026c2c43d2960d034c4db394c571098b8d",
+    "annotation": "verified",
+    "version_track_match": true
+  },
+  {
+    "image": "minio",
+    "ref": "us-docker.pkg.dev/windyflo-public/windyflo-marketplace/windyflo/minio:3.0.14",
+    "digest": "sha256:c18f8b918f829d9bcad93ebf0b431d12cac13f70c529c3199a621bbb77c54c88",
+    "annotation": "verified",
+    "version_track_match": true
+  },
+  {
+    "image": "minio-mc",
+    "ref": "us-docker.pkg.dev/windyflo-public/windyflo-marketplace/windyflo/minio-mc:3.0.14",
+    "digest": "sha256:0f0b37ef8a286cd3807a2e80ddad86d77c6faee4085f684826de934b1c956d05",
+    "annotation": "verified",
+    "version_track_match": true
+  },
+  {
+    "image": "redis",
+    "ref": "us-docker.pkg.dev/windyflo-public/windyflo-marketplace/windyflo/redis:3.0.14",
+    "digest": "sha256:4b567805729f1f67d557879e338aee9624a96b615dd107daf99b0353493e02d0",
+    "annotation": "verified",
+    "version_track_match": true
+  },
+  {
+    "image": "redis-sentinel",
+    "ref": "us-docker.pkg.dev/windyflo-public/windyflo-marketplace/windyflo/redis-sentinel:3.0.14",
+    "digest": "sha256:c8d7992f4651c47b7851f0a1a45eb41ea5cd41109de1251bd8a16e1b390aa2e7",
+    "annotation": "verified",
+    "version_track_match": true
+  }
+]

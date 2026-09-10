@@ -1,0 +1,114 @@
+x-google-marketplace:
+  schemaVersion: v2
+  applicationApiVersion: v1beta1
+  publishedVersion: 3.0.14
+  publishedVersionMetadata:
+    releaseNote: WindyFlo BYOL deployment package.
+    recommended: false
+  images:
+    ? ''
+    : properties:
+        image.repository:
+          type: REPO_WITH_REGISTRY
+        image.tag:
+          type: TAG
+    postgresql:
+      properties:
+        data.postgres.imageName:
+          type: FULL
+    pgbouncer:
+      properties:
+        data.postgres.pooler.image:
+          type: FULL
+    minio:
+      properties:
+        data.minio.image:
+          type: FULL
+    minio-mc:
+      properties:
+        data.minio.bootstrap.image:
+          type: FULL
+    redis:
+      properties:
+        redis.image.registry:
+          type: REGISTRY
+        redis.image.repository:
+          type: REPO_WITHOUT_REGISTRY
+        redis.image.tag:
+          type: TAG
+    redis-sentinel:
+      properties:
+        redis.sentinel.image.registry:
+          type: REGISTRY
+        redis.sentinel.image.repository:
+          type: REPO_WITHOUT_REGISTRY
+        redis.sentinel.image.tag:
+          type: TAG
+  clusterConstraints:
+    k8sVersion: '>=1.27.0'
+    assistedClusterCreation:
+      type: DISABLED
+      creationGuidance: Use an existing GKE Standard cluster with CloudNativePG 1.24,
+        MinIO Operator 6, an NGINX ingress controller, cert-manager, and a ready TLS
+        ClusterIssuer. Enable the Persistent Disk CSI driver. This package installs
+        the WindyFlo workloads; these cluster services must already be installed.
+properties:
+  name:
+    type: string
+    x-google-marketplace:
+      type: NAME
+  namespace:
+    type: string
+    x-google-marketplace:
+      type: NAMESPACE
+  ingress.host:
+    type: string
+    title: Public domain
+    description: DNS name that you will point at the existing ingress controller.
+    pattern: ^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$
+  ingress.tls.issuer:
+    type: string
+    title: Existing TLS ClusterIssuer
+    description: Name of a ready cert-manager ClusterIssuer in your cluster.
+    default: letsencrypt-prod
+  main.autoscaling.maxReplicas:
+    type: integer
+    title: Maximum application replicas
+    default: 8
+    minimum: 2
+    maximum: 16
+  worker.autoscaling.maxReplicas:
+    type: integer
+    title: Maximum worker replicas
+    default: 8
+    minimum: 2
+    maximum: 16
+  data.postgres.storageClass:
+    type: string
+    title: PostgreSQL storage class
+    default: premium-rwo
+    x-google-marketplace:
+      type: STORAGE_CLASS
+      storageClass:
+        type: SSD
+  data.minio.storageClass:
+    type: string
+    title: Object storage class
+    default: premium-rwo
+    x-google-marketplace:
+      type: STORAGE_CLASS
+      storageClass:
+        type: SSD
+  redis.global.storageClass:
+    type: string
+    title: Redis storage class
+    default: premium-rwo
+    x-google-marketplace:
+      type: STORAGE_CLASS
+      storageClass:
+        type: SSD
+required:
+- name
+- namespace
+- ingress.host
+- ingress.tls.issuer

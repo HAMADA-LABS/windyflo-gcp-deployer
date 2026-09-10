@@ -1,0 +1,472 @@
+global:
+  azure:
+    images: {}
+appVersionOverride: ''
+image:
+  repository: us-docker.pkg.dev/windyflo-public/windyflo-marketplace/windyflo
+  tag: 3.0.14
+  digest: ''
+  pullPolicy: IfNotPresent
+imagePullSecrets: []
+nameOverride: ''
+fullnameOverride: ''
+serviceAccount:
+  create: true
+  name: ''
+  annotations: {}
+main:
+  replicaCount: 2
+  port: 3000
+  command:
+  - node
+  - /app/bin/run
+  - start
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: '2'
+      memory: 2Gi
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 75
+  podDisruptionBudget:
+    enabled: true
+    maxUnavailable: 1
+    minAvailable: 1
+  livenessProbe:
+    httpGet:
+      path: /api/v1/ping
+      port: 3000
+    initialDelaySeconds: 40
+    periodSeconds: 10
+    failureThreshold: 6
+  readinessProbe:
+    httpGet:
+      path: /api/v1/ping
+      port: 3000
+    initialDelaySeconds: 20
+    periodSeconds: 10
+    failureThreshold: 6
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: kubernetes.io/hostname
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        app.kubernetes.io/component: main
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        app.kubernetes.io/component: main
+collab:
+  enabled: true
+  replicaCount: 1
+  path: /collab
+  port: 3000
+  command:
+  - node
+  - /app/bin/run
+  - start
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: '2'
+      memory: 2Gi
+  podDisruptionBudget:
+    enabled: false
+  livenessProbe:
+    httpGet:
+      path: /api/v1/ping
+      port: 3000
+    initialDelaySeconds: 40
+    periodSeconds: 10
+    failureThreshold: 6
+  readinessProbe:
+    httpGet:
+      path: /api/v1/ping
+      port: 3000
+    initialDelaySeconds: 20
+    periodSeconds: 10
+    failureThreshold: 6
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+worker:
+  replicaCount: 2
+  port: 5566
+  command:
+  - /bin/sh
+  - -c
+  - node /app/healthcheck/healthcheck.js & node /app/bin/run worker
+  env:
+    NODE_OPTIONS: --max-old-space-size=8192
+  resources:
+    requests:
+      cpu: 250m
+      memory: 1Gi
+    limits:
+      cpu: '2'
+      memory: 4Gi
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 75
+  podDisruptionBudget:
+    enabled: true
+    maxUnavailable: 1
+    minAvailable: 1
+  livenessProbe:
+    httpGet:
+      path: /healthz
+      port: 5566
+    initialDelaySeconds: 40
+    periodSeconds: 10
+    failureThreshold: 6
+  readinessProbe:
+    httpGet:
+      path: /healthz
+      port: 5566
+    initialDelaySeconds: 20
+    periodSeconds: 10
+    failureThreshold: 6
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: kubernetes.io/hostname
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        app.kubernetes.io/component: worker
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        app.kubernetes.io/component: worker
+service:
+  type: ClusterIP
+  port: 3000
+ingress:
+  enabled: true
+  className: nginx
+  host: windyflo.example.com
+  stickySession:
+    enabled: true
+    cookieName: windyflo_affinity
+    cookieExpires: '172800'
+  tls:
+    enabled: true
+    issuer: letsencrypt-prod
+    secretName: windyflo-tls
+  annotations: {}
+config:
+  MODE: queue
+  QUEUE_NAME: windyflo
+  PORT: '3000'
+  WORKER_PORT: '5566'
+  CORS_ORIGINS: '*'
+  STORAGE_TYPE: s3
+  S3_FORCE_PATH_STYLE: 'true'
+  S3_STORAGE_REGION: us-east-1
+  DATABASE_POOL_SIZE: '10'
+  DATABASE_CONNECTION_TIMEOUT: '10000'
+  DATABASE_STATEMENT_TIMEOUT: '60000'
+  DATABASE_QUERY_TIMEOUT: '60000'
+  DATABASE_SSL: 'false'
+  REDIS_TLS: 'false'
+  ENABLE_METRICS: 'true'
+  METRICS_PROVIDER: prometheus
+  extra: {}
+secrets:
+  autoGenerate: true
+  WINDYFLO_SECRETKEY_OVERWRITE: ''
+  DATABASE_PASSWORD: ''
+  JWT_AUTH_TOKEN_SECRET: ''
+  JWT_REFRESH_TOKEN_SECRET: ''
+  EXPRESS_SESSION_SECRET: ''
+  TOKEN_HASH_SECRET: ''
+  S3_STORAGE_ACCESS_KEY_ID: ''
+  S3_STORAGE_SECRET_ACCESS_KEY: ''
+  extra: {}
+externalSecrets:
+  enabled: false
+  secretStoreRef:
+    name: windyflo-vault
+    kind: ClusterSecretStore
+  refreshInterval: 1h
+  dataFromKey: ''
+  remoteRefs: {}
+operators:
+  cnpg:
+    enabled: false
+  minioOperator:
+    enabled: false
+  certManager:
+    enabled: false
+  externalSecrets:
+    enabled: false
+cnpgOperator:
+  nameOverride: cloudnative-pg
+  crds:
+    create: true
+  replicaCount: 2
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 100Mi
+minio-operator:
+  operator:
+    replicaCount: 1
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+cert-manager:
+  crds:
+    enabled: true
+    keep: true
+  replicaCount: 2
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+  webhook:
+    replicaCount: 2
+    podDisruptionBudget:
+      enabled: true
+      minAvailable: 1
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+  cainjector:
+    replicaCount: 2
+    podDisruptionBudget:
+      enabled: true
+      minAvailable: 1
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+external-secrets:
+  installCRDs: true
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+  webhook:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+  certController:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+clusterIssuer:
+  enabled: false
+  issuerName: windyflo-letsencrypt
+  email: ''
+  server: https://acme-v02.api.letsencrypt.org/directory
+data:
+  postgres:
+    embedded: true
+    name: windyflo-pg
+    instances: 3
+    imageName: us-docker.pkg.dev/windyflo-public/windyflo-marketplace/windyflo/postgresql:3.0.14
+    storageSize: 50Gi
+    storageClass: premium-rwo
+    database: windyflo
+    owner: windyflo
+    synchronous:
+      enabled: true
+      number: 1
+    pooler:
+      enabled: true
+      instances: 2
+      poolMode: transaction
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 500m
+          memory: 256Mi
+      image: us-docker.pkg.dev/windyflo-public/windyflo-marketplace/windyflo/pgbouncer:3.0.14
+    backup:
+      enabled: true
+      bucket: windyflo-pg-backups
+      destinationPath: s3://windyflo-pg-backups/windyflo
+      endpointURL: http://windyflo-minio-hl.windyflo.svc:9000
+      retentionPolicy: 30d
+      schedule:
+        enabled: true
+        cron: 0 0 2 * * *
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: '2'
+        memory: 2Gi
+  redis:
+    embedded: true
+  minio:
+    embedded: true
+    name: windyflo-minio
+    image: us-docker.pkg.dev/windyflo-public/windyflo-marketplace/windyflo/minio:3.0.14
+    mode: distributed
+    servers: 4
+    volumesPerServer: 1
+    storageSize: 100Gi
+    storageClass: premium-rwo
+    bucket: windyflo
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: '2'
+        memory: 2Gi
+    bootstrap:
+      enabled: true
+      versioning: true
+      logsExpiryDays: 30
+      image: us-docker.pkg.dev/windyflo-public/windyflo-marketplace/windyflo/minio-mc:3.0.14
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 250m
+          memory: 128Mi
+redis:
+  global:
+    security:
+      allowInsecureImages: true
+    imageRegistry: ''
+    storageClass: premium-rwo
+  architecture: replication
+  sentinel:
+    enabled: true
+    image:
+      repository: windyflo-public/windyflo-marketplace/windyflo/redis-sentinel
+      tag: 3.0.14
+      registry: us-docker.pkg.dev
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 250m
+        memory: 128Mi
+  image:
+    repository: windyflo-public/windyflo-marketplace/windyflo/redis
+    tag: 3.0.14
+    registry: us-docker.pkg.dev
+  metrics:
+    image:
+      repository: bitnamilegacy/redis-exporter
+      tag: 1.67.0-debian-12-r0
+  kubectl:
+    image:
+      repository: bitnamilegacy/kubectl
+      tag: 1.32.0-debian-12-r0
+  volumePermissions:
+    image:
+      repository: bitnamilegacy/os-shell
+      tag: 12-debian-12-r34
+  sysctl:
+    image:
+      repository: bitnamilegacy/os-shell
+      tag: 12-debian-12-r34
+  auth:
+    enabled: true
+    existingSecret: windyflo-redis-auth
+    existingSecretPasswordKey: redis-password
+  master:
+    persistence:
+      enabled: true
+      size: 8Gi
+    podAntiAffinityPreset: soft
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  replica:
+    replicaCount: 2
+    persistence:
+      enabled: true
+      size: 8Gi
+    podAntiAffinityPreset: soft
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+metrics:
+  serviceMonitor:
+    enabled: false
+    interval: 30s
+    path: /api/v1/metrics
+podSecurityContext:
+  seccompProfile:
+    type: RuntimeDefault
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: false
+networkPolicy:
+  enabled: true
+  ingressControllerNamespace: ingress-nginx
+  monitoringNamespace: monitoring
+gcpMarketplace:
+  enabled: true
+  ubbagent:
+    enabled: false
+    image: ''
+    reportingSecretName: ''
+    serviceName: ''
+    metricName: ''
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+  publishedVersion: 3.0.14
+  partnerId: windyflo-public
+  productId: windyflo
+  partnerName: Hamada Labs
+verifyImages:
+  imageGlobs: us-docker.pkg.dev/windyflo-public/windyflo-marketplace/windyflo*
